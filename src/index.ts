@@ -38,25 +38,42 @@ function verifyCallback(
 }
 passport.use(new googleOAuth2.Strategy(authOptions, verifyCallback));
 
-app.use(helmet());
 app.use(passport.initialize());
+
 // function checkLoggedIn(req, res, next) {
 //   const isLoggedIn = true; // TODO
 //   if (!isLoggedIn) return res.status(401).json({ error: "You must log in" });
 //   next();
 // }
 
-app.get("/auth/google", (req, res) => {});
-app.get("/auth/google/callback", (req, res) => {});
+app.get("/auth/google", passport.authenticate("google", { scope: ["email"] }));
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/failure",
+    successRedirect: "/",
+    session: false,
+  }),
+  (req, res) => {
+    console.log("Google called us back!");
+    // return res.redirect("/");
+  }
+);
 app.get("/auth/logout", (req, res) => {});
-app.get("/secret", (req, res) => {
-  res.send("This is your secret");
-});
+
+app.use(helmet());
+
 app.get("/", (req, res) => {
   const index = `${path.resolve("public")}/index.html`;
-  res.sendFile(index);
+  return res.sendFile(index);
+});
+app.get("/secret", (req, res) => {
+  return res.send("This is your secret");
+});
+app.get("/failure", (req, res) => {
+  return res.send("Failed to log in");
 });
 
 https.createServer(tlsArgs, app).listen(PORT, () => {
-  console.log(`Listening on ${PORT}`);
+  console.log(`Listening on https://localhost:${PORT}`);
 });
