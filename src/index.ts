@@ -37,12 +37,13 @@ function verifyCallback(
   profile: Profile,
   done: VerifyCallback
 ) {
-  console.log("Google profile", profile);
+  // console.log("Google profile", profile);
   done(null, profile);
 }
 
 function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
-  const isLoggedIn = true; // TODO
+  console.log("Current user is:", req.user);
+  const isLoggedIn = req.isAuthenticated() && req.user;
   if (!isLoggedIn) return res.status(401).json({ error: "You must log in" });
   next();
 }
@@ -72,7 +73,9 @@ app.use(function (request, response, next) {
 
 // * OAuth2 middlewares
 passport.serializeUser((user, done) => {
-  done(null, user);
+  // * reduce session size by only get user.id property
+  const usr = user as { id: string };
+  done(null, usr.id);
 });
 passport.deserializeUser((obj, done) => {
   if (obj) done(null, obj);
