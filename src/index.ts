@@ -43,6 +43,7 @@ function verifyCallback(
 
 function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
   console.log("Current user is:", req.user);
+  // * note "req.isAuthenticated()" is provided by passport
   const isLoggedIn = req.isAuthenticated() && req.user;
   if (!isLoggedIn) return res.status(401).json({ error: "You must log in" });
   next();
@@ -98,7 +99,11 @@ app.get(
     // return res.redirect("/");
   }
 );
-app.get("/auth/logout", (req, res) => {});
+app.get("/auth/logout", (req, res) => {
+  // * note "req.logout()" is provided by passport
+  req.logout(() => {});
+  return res.redirect("/");
+});
 
 // * application routes
 app.get("/", (req, res) => {
